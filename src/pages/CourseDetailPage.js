@@ -12,6 +12,7 @@ import {
   ExternalLink,
   ArrowLeft,
   Lock,
+  BookOpen,
 } from "lucide-react";
 import { courseService } from "../services/api";
 
@@ -179,20 +180,49 @@ const CourseDetailPage = () => {
 
                 {activeLesson.ressources?.length > 0 && (
                   <div className="resources-section">
-                    <h3>Ressources</h3>
+                    <h3>Ressources et Travaux Pratiques</h3>
                     <div className="resources-grid">
-                      {activeLesson.ressources.map((res) => (
-                        <a
-                          key={res.id}
-                          href={res.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="resource-link"
-                        >
-                          <Download size={16} />
-                          <span>{res.nom}</span>
-                        </a>
-                      ))}
+                      {activeLesson.ressources.map((res) => {
+                        const isNotebook = res.nom.endsWith(".ipynb");
+                        return (
+                          <div key={res.id} className="resource-card-item">
+                            <div className="resource-info">
+                              {isNotebook ? (
+                                <BookOpen
+                                  size={20}
+                                  className="text-orange-500"
+                                />
+                              ) : (
+                                <Download size={20} className="text-blue-500" />
+                              )}
+                              <span>{res.nom}</span>
+                            </div>
+                            <div className="resource-actions">
+                              {isNotebook ? (
+                                <a
+                                  href={res.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="action-btn colab-btn"
+                                >
+                                  <ExternalLink size={14} />
+                                  Google Colab
+                                </a>
+                              ) : (
+                                <a
+                                  href={res.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="action-btn download-btn"
+                                >
+                                  <Download size={14} />
+                                  Télécharger
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
