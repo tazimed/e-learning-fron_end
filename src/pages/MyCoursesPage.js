@@ -65,7 +65,10 @@ const MyCoursesPage = () => {
               <div className="course-card-top">
                 <div className="course-image-mini">
                   {course.image_url ? (
-                    <img src={course.image_url} alt={course.title} />
+                    <img
+                      src={`http://127.0.0.1:9000${course.image_url}`}
+                      alt={course.titre}
+                    />
                   ) : (
                     <div className="placeholder-mini"></div>
                   )}

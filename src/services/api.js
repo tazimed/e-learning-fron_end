@@ -50,6 +50,7 @@ api.interceptors.response.use(
   },
 );
 
+
 export const courseService = {
   getAllCourses: () => api.get("/courses"),
   getMyCourses: () => api.get("/my-courses"),
@@ -58,7 +59,11 @@ export const courseService = {
   updateCourse: (id, data) => api.put(`/courses/${id}`, data),
   toggleVisibility: (id) => api.post(`/courses/${id}/toggle-visibility`),
   enroll: (id) => api.post(`/courses/${id}/enroll`),
+
+  // SKILL TREE
+  getSkillTree: () => api.get("/skill-tree"),
 };
+
 
 export const projectService = {
   getAllProjects: () => api.get("/projects"),
