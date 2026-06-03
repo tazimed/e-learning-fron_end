@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Swal from "sweetalert2";
@@ -14,21 +14,26 @@ import {
   ArrowLeft,
   Lock,
   BookOpen,
+  Award,
 } from "lucide-react";
 import { courseService } from "../services/api";
 
 const CourseDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [activeLesson, setActiveLesson] = useState(null);
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
+  const [completing, setCompleting] = useState(false);
   const [expandedChapters, setExpandedChapters] = useState({});
 
   const fetchCourseDetails = async () => {
     setLoading(true);
     try {
       const response = await courseService.getCourseById(id);
+      console.log("Course data from API:", response.data);
+      console.log("enrolled?", response.data.enrolled);
       setCourse(response.data);
       // Set first lesson as active by default if available
       if (
@@ -49,44 +54,70 @@ const CourseDetailPage = () => {
     fetchCourseDetails();
   }, [id]);
 
-const handleEnroll = async () => {
-  setEnrolling(true);
+  const handleEnroll = async () => {
+    setEnrolling(true);
 
-  try {
-    const response = await courseService.enroll(id);
+    try {
+      const response = await courseService.enroll(id);
 
-    await Swal.fire({
-      icon: "success",
-      title: "Inscription réussie 🎉",
-      text: response.data.message || "Bienvenue dans le cours !",
-      confirmButtonColor: "#7c3aed",
-      background: "#ffffff",
-      color: "#111827",
-      timer: 2000,
-      showConfirmButton: false,
-    });
+      await Swal.fire({
+        icon: "success",
+        title: "Inscription réussie 🎉",
+        text: response.data.message || "Bienvenue dans le cours !",
+        confirmButtonColor: "#7c3aed",
+        background: "#ffffff",
+        color: "#111827",
+        timer: 2000,
+        showConfirmButton: false,
+      });
 
-    await fetchCourseDetails();
+      await fetchCourseDetails();
+    } catch (err) {
+      console.error("Enrollment error:", err);
 
-    window.location.reload();
+      // If we got 400 (already enrolled), still refresh course data!
+      if (err.response?.status === 400) {
+        await fetchCourseDetails();
+      }
 
-  } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: err.response?.data?.message || "Erreur lors de l'inscription.",
+        confirmButtonColor: "#ef4444",
+      });
+    } finally {
+      setEnrolling(false);
+    }
+  };
 
-    console.error("Enrollment error:", err);
+  const handleComplete = async () => {
+    setCompleting(true);
+    try {
+      await courseService.markAsCompleted(id);
 
-    Swal.fire({
-      icon: "error",
-      title: "Erreur",
-      text:
-        err.response?.data?.message ||
-        "Erreur lors de l'inscription.",
-      confirmButtonColor: "#ef4444",
-    });
+      await Swal.fire({
+        icon: "success",
+        title: "Félicitations! 🎉",
+        text: "Vous avez terminé ce cours ! Les prochains cours sont maintenant débloqués.",
+        confirmButtonColor: "#10b981",
+      });
 
-  } finally {
-    setEnrolling(false);
-  }
-};
+      navigate("/skill-tree");
+    } catch (err) {
+      console.error("Completion error:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text:
+          err.response?.data?.message ||
+          "Erreur lors de la mise à jour du statut.",
+        confirmButtonColor: "#ef4444",
+      });
+    } finally {
+      setCompleting(false);
+    }
+  };
 
   const toggleChapter = (chapterId) => {
     setExpandedChapters((prev) => ({
@@ -109,13 +140,21 @@ const handleEnroll = async () => {
           <h1>{course.titre}</h1>
           <div className="header-meta">
             <span className="badge-meta">{course.niveau}</span>
-            <span className="instructor-meta">Par {course.instructor}</span>
+            {course.creator && (
+              <span className="instructor-meta">
+                Par {course.creator.name || course.creator.email}
+              </span>
+            )}
           </div>
         </div>
         {course.image_url && (
           <div className="header-right">
             <img
-              src={`http://127.0.0.1:9000${course.image_url}`}
+              src={
+                course.image_url.startsWith("http")
+                  ? course.image_url
+                  : `http://127.0.0.1:9000${course.image_url}`
+              }
               alt={course.titre}
               className="course-header-img"
             />
@@ -253,6 +292,38 @@ const handleEnroll = async () => {
                     </div>
                   </div>
                 )}
+
+                <div
+                  style={{
+                    marginTop: "40px",
+                    paddingTop: "20px",
+                    borderTop: "1px solid #e5e7eb",
+                  }}
+                >
+                  <button
+                    onClick={handleComplete}
+                    disabled={completing}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      backgroundColor: "#10b981",
+                      color: "white",
+                      border: "none",
+                      padding: "14px 32px",
+                      borderRadius: "12px",
+                      fontSize: "16px",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    <Award size={20} />
+                    {completing
+                      ? "Marquage en cours..."
+                      : "Marquer le cours comme terminé"}
+                  </button>
+                </div>
               </div>
             </div>
           ) : (

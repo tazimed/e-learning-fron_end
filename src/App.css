@@ -1812,6 +1812,15 @@ body {
   color:#64748b;
 }
 
+.available-circle{
+  background:#8b5cf6;
+  color:white;
+}
+
+.available-text{
+  color:#8b5cf6;
+}
+
 .roadmap-line{
   width:6px;
   height:120px;

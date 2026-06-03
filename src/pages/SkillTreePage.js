@@ -46,6 +46,10 @@ const SkillTreePage = () => {
     }
   };
 
+  const refreshSkillTree = () => {
+    fetchSkillTree();
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -85,7 +89,7 @@ const SkillTreePage = () => {
 
             <div
               className={`roadmap-node ${
-                course.locked ? "locked" : "completed"
+                course.locked ? "locked" : course.completed ? "completed" : "available"
               }`}
             >
 
@@ -93,7 +97,9 @@ const SkillTreePage = () => {
                 className={`roadmap-circle ${
                   course.locked
                     ? "locked-circle"
-                    : "completed-circle"
+                    : course.completed
+                    ? "completed-circle"
+                    : "available-circle"
                 }`}
               >
 
@@ -117,7 +123,7 @@ const SkillTreePage = () => {
 
                 <p>
                   {course.locked
-                    ? "Complétez le cours précédent pour débloquer celui-ci."
+                    ? "Complétez les prérequis pour débloquer celui-ci."
                     : "Cours disponible dans votre parcours IA."}
                 </p>
 

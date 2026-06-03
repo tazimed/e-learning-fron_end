@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
+  process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:9000/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -59,6 +59,7 @@ export const courseService = {
   updateCourse: (id, data) => api.put(`/courses/${id}`, data),
   toggleVisibility: (id) => api.post(`/courses/${id}/toggle-visibility`),
   enroll: (id) => api.post(`/courses/${id}/enroll`),
+  markAsCompleted: (id) => api.post(`/courses/${id}/complete`),
 
   // SKILL TREE
   getSkillTree: () => api.get("/skill-tree"),
