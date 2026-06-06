@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import Swal from "sweetalert2";
 import {
   PlayCircle,
   FileText,
@@ -49,44 +48,18 @@ const CourseDetailPage = () => {
     fetchCourseDetails();
   }, [id]);
 
-const handleEnroll = async () => {
-  setEnrolling(true);
-
-  try {
-    const response = await courseService.enroll(id);
-
-    await Swal.fire({
-      icon: "success",
-      title: "Inscription réussie 🎉",
-      text: response.data.message || "Bienvenue dans le cours !",
-      confirmButtonColor: "#7c3aed",
-      background: "#ffffff",
-      color: "#111827",
-      timer: 2000,
-      showConfirmButton: false,
-    });
-
-    await fetchCourseDetails();
-
-    window.location.reload();
-
-  } catch (err) {
-
-    console.error("Enrollment error:", err);
-
-    Swal.fire({
-      icon: "error",
-      title: "Erreur",
-      text:
-        err.response?.data?.message ||
-        "Erreur lors de l'inscription.",
-      confirmButtonColor: "#ef4444",
-    });
-
-  } finally {
-    setEnrolling(false);
-  }
-};
+  const handleEnroll = async () => {
+    setEnrolling(true);
+    try {
+      await courseService.enroll(id);
+      await fetchCourseDetails(); // Refresh to show content
+    } catch (err) {
+      console.error("Enrollment error:", err);
+      alert("Erreur lors de l'inscription.");
+    } finally {
+      setEnrolling(false);
+    }
+  };
 
   const toggleChapter = (chapterId) => {
     setExpandedChapters((prev) => ({
@@ -115,7 +88,7 @@ const handleEnroll = async () => {
         {course.image_url && (
           <div className="header-right">
             <img
-              src={`http://127.0.0.1:9000${course.image_url}`}
+              src={course.image_url}
               alt={course.titre}
               className="course-header-img"
             />
