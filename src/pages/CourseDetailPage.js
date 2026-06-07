@@ -26,6 +26,7 @@ const CourseDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [completingLesson, setCompletingLesson] = useState(null);
   const [expandedChapters, setExpandedChapters] = useState({});
 
   const fetchCourseDetails = async () => {
@@ -91,6 +92,29 @@ const CourseDetailPage = () => {
     }
   };
 
+  const handleCompleteLesson = async (lecon) => {
+    setCompletingLesson(lecon.id);
+    try {
+      await courseService.completeLesson(lecon.id);
+      await Swal.fire({
+        icon: "success",
+        title: "Leçon complétée ! 🎉",
+        confirmButtonColor: "#10b981",
+      });
+      await fetchCourseDetails();
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: "Erreur lors de la complétion de la leçon",
+        confirmButtonColor: "#ef4444",
+      });
+    } finally {
+      setCompletingLesson(null);
+    }
+  };
+
   const handleComplete = async () => {
     setCompleting(true);
     try {
@@ -146,6 +170,34 @@ const CourseDetailPage = () => {
               </span>
             )}
           </div>
+          
+          {course.enrolled && (
+            <div style={{ marginTop: "16px", width: "100%" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                <span style={{ fontSize: "14px", fontWeight: "500", color: "#4b5563" }}>
+                  Progression du cours
+                </span>
+                <span style={{ fontSize: "14px", fontWeight: "700", color: "#7c3aed" }}>
+                  {Math.round(course.progression)}%
+                </span>
+              </div>
+              <div style={{ 
+                width: "100%", 
+                height: "10px", 
+                backgroundColor: "#e5e7eb", 
+                borderRadius: "999px",
+                overflow: "hidden" 
+              }}>
+                <div style={{ 
+                  height: "100%", 
+                  backgroundColor: "#7c3aed",
+                  borderRadius: "999px",
+                  width: `${course.progression}%`,
+                  transition: "width 0.3s ease"
+                }} />
+              </div>
+            </div>
+          )}
         </div>
         {course.image_url && (
           <div className="header-right">
@@ -183,16 +235,27 @@ const CourseDetailPage = () => {
 
                 {expandedChapters[chapitre.id] && (
                   <div className="lessons-list">
-                    {chapitre.lecons.map((lecon) => (
-                      <button
-                        key={lecon.id}
-                        className={`lesson-item ${activeLesson?.id === lecon.id ? "active" : ""}`}
-                        onClick={() => setActiveLesson(lecon)}
-                      >
-                        <PlayCircle size={16} />
-                        <span>{lecon.title || lecon.titre}</span>
-                      </button>
-                    ))}
+                    {chapitre.lecons.map((lecon) => {
+                      const isLessonCompleted = course.lessonProgress?.some(lp => lp.lecon_id === lecon.id && lp.completed);
+                      return (
+                        <button
+                          key={lecon.id}
+                          className={`lesson-item ${activeLesson?.id === lecon.id ? "active" : ""}`}
+                          onClick={() => setActiveLesson(lecon)}
+                          style={{ 
+                            opacity: isLessonCompleted ? 0.7 : 1,
+                            position: "relative"
+                          }}
+                        >
+                          {isLessonCompleted ? (
+                            <CheckCircle2 size={16} color="#10b981" />
+                          ) : (
+                            <PlayCircle size={16} />
+                          )}
+                          <span>{lecon.title || lecon.titre}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -298,31 +361,76 @@ const CourseDetailPage = () => {
                     marginTop: "40px",
                     paddingTop: "20px",
                     borderTop: "1px solid #e5e7eb",
+                    display: "flex",
+                    gap: "16px",
+                    flexWrap: "wrap"
                   }}
                 >
-                  <button
-                    onClick={handleComplete}
-                    disabled={completing}
-                    style={{
+                  {!course.lessonProgress?.some(lp => lp.lecon_id === activeLesson.id && lp.completed) && (
+                    <button
+                      onClick={() => handleCompleteLesson(activeLesson)}
+                      disabled={completingLesson === activeLesson.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        backgroundColor: "#7c3aed",
+                        color: "white",
+                        border: "none",
+                        padding: "14px 32px",
+                        borderRadius: "12px",
+                        fontSize: "16px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      <CheckCircle2 size={20} />
+                      {completingLesson === activeLesson.id 
+                        ? "Marquage en cours..." 
+                        : "Marquer la leçon comme terminée"}
+                    </button>
+                  )}
+                  
+                  {course.completed ? (
+                    <div style={{
                       display: "flex",
                       alignItems: "center",
                       gap: "10px",
-                      backgroundColor: "#10b981",
-                      color: "white",
-                      border: "none",
                       padding: "14px 32px",
                       borderRadius: "12px",
-                      fontSize: "16px",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    <Award size={20} />
-                    {completing
-                      ? "Marquage en cours..."
-                      : "Marquer le cours comme terminé"}
-                  </button>
+                      backgroundColor: "#10b98120",
+                      color: "#10b981",
+                      fontWeight: "600"
+                    }}>
+                      <Award size={20} />
+                      Cours terminé !
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleComplete}
+                      disabled={completing}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        backgroundColor: "#10b981",
+                        color: "white",
+                        border: "none",
+                        padding: "14px 32px",
+                        borderRadius: "12px",
+                        fontSize: "16px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      <Award size={20} />
+                      {completing
+                        ? "Marquage en cours..."
+                        : "Marquer le cours comme terminé"}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
