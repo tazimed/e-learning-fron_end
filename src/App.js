@@ -17,6 +17,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import CreateCoursePage from "./pages/CreateCoursePage";
 import MyCoursesPage from "./pages/MyCoursesPage";
+import QuizPage from "./pages/QuizPage";
 import "./App.css";
 
 function App() {
@@ -42,6 +43,10 @@ function App() {
             <Route path="courses/:id" element={<CourseDetailPage />} />
             <Route path="projects" element={<ProjectsPage />} />
             <Route path="skill-tree" element={<SkillTreePage />} />
+
+            {/* Quiz Routes */}
+            <Route path="quiz/chapter/:chapterId" element={<QuizPage />} />
+            <Route path="quiz/course/:courseId" element={<QuizPage />} />
 
             {/* Teacher Routes */}
             <Route

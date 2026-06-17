@@ -6,27 +6,33 @@ const CoursesPage = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedLevel, setSelectedLevel] = useState("");
+
+  const fetchCourses = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (searchTerm) params.append("search", searchTerm);
+      if (selectedLevel) params.append("level", selectedLevel);
+      
+      const response = await courseService.getAllCourses(params);
+      setCourses(response.data);
+      setError(null);
+    } catch (err) {
+      console.error("CoursesPage: Error fetching courses:", err);
+      setError(
+        err.message ||
+          "Une erreur est survenue lors de la récupération des cours.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      setLoading(true);
-      try {
-        const response = await courseService.getAllCourses();
-        setCourses(response.data);
-        setError(null);
-      } catch (err) {
-        console.error("CoursesPage: Error fetching courses:", err);
-        setError(
-          err.message ||
-            "Une erreur est survenue lors de la récupération des cours.",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCourses();
-  }, []);
+  }, [searchTerm, selectedLevel]);
 
   return (
     <div>
@@ -37,17 +43,72 @@ const CoursesPage = () => {
         </p>
       </header>
 
+      {/* Search and Filter Section */}
+      <div style={{ 
+        marginBottom: "32px", 
+        display: "flex", 
+        gap: "16px", 
+        flexWrap: "wrap",
+        alignItems: "center"
+      }}>
+        <input
+          type="text"
+          placeholder="Rechercher un cours..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            flex: 1,
+            minWidth: "250px",
+            padding: "12px 16px",
+            border: "1px solid #e5e7eb",
+            borderRadius: "8px",
+            fontSize: "16px"
+          }}
+        />
+        
+        <select
+          value={selectedLevel}
+          onChange={(e) => setSelectedLevel(e.target.value)}
+          style={{
+            padding: "12px 16px",
+            border: "1px solid #e5e7eb",
+            borderRadius: "8px",
+            fontSize: "16px",
+            minWidth: "180px"
+          }}
+        >
+          <option value="">Tous les niveaux</option>
+          <option value="Débutant">Débutant</option>
+          <option value="Intermédiaire">Intermédiaire</option>
+          <option value="Avancé">Avancé</option>
+        </select>
+      </div>
+
       {loading && <div className="loader">Chargement des cours...</div>}
       {error && <div className="error-message">{error}</div>}
 
       <div className="course-grid">
+        {courses.length === 0 && !loading && (
+          <div style={{ 
+            width: "100%", 
+            textAlign: "center", 
+            padding: "40px 0" 
+          }}>
+            <p style={{ fontSize: "18px", color: "#6b7280" }}>
+              Aucun cours trouvé avec ces critères.
+            </p>
+          </div>
+        )}
+
         {courses.map((course) => (
           <div key={course.id} className="course-card">
             <div className="course-image-container">
               {course.image_url ? (
                 <img
-                  src={`http://127.0.0.1:8000${course.image_url}`}
-                  alt={course.titre}
+                  src={course.image_url.startsWith('http') 
+                    ? course.image_url 
+                    : `http://127.0.0.1:8000${course.image_url}`}
+                  alt={course.title}
                   className="course-thumb"
                 />
               ) : (

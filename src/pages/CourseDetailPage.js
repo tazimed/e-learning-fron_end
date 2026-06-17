@@ -28,7 +28,6 @@ const CourseDetailPage = () => {
     try {
       const response = await courseService.getCourseById(id);
       setCourse(response.data);
-      // Expand all chapters by default
       const expanded = {};
       response.data.chapitres.forEach((chap) => {
         expanded[chap.id] = true;
@@ -47,7 +46,6 @@ const CourseDetailPage = () => {
 
   const handleEnroll = async () => {
     setEnrolling(true);
-
     try {
       await courseService.enroll(id);
       await fetchCourseDetails();
@@ -61,7 +59,6 @@ const CourseDetailPage = () => {
   const handleCompleteLesson = async (lessonId) => {
     setCompletingLesson(lessonId);
     try {
-      // Just mark locally as completed for now
       setExpandedLessons((prev) => ({ ...prev, [lessonId]: true }));
     } catch (error) {
       console.error(error);
@@ -166,7 +163,6 @@ const CourseDetailPage = () => {
       </div>
 
       <div className="player-main">
-        {/* Sidebar du Syllabus */}
         <aside className="player-sidebar">
           <div className="sidebar-title">Contenu du cours</div>
           <div className="chapters-list">
@@ -195,9 +191,7 @@ const CourseDetailPage = () => {
                             isCompleted ? "completed" : ""
                           }`}
                           onClick={() => toggleLesson(lecon.id)}
-                          style={{
-                            opacity: isCompleted ? 0.7 : 1,
-                          }}
+                          style={{ opacity: isCompleted ? 0.7 : 1 }}
                         >
                           {isCompleted ? (
                             <CheckCircle2 size={16} color="#10b981" />
@@ -208,6 +202,26 @@ const CourseDetailPage = () => {
                         </button>
                       );
                     })}
+                    {course.enrolled && (
+                      <Link
+                        to={`/quiz/chapter/${chapitre.id}`}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          padding: "12px 16px",
+                          marginLeft: "32px",
+                          color: "#7c3aed",
+                          fontWeight: "500",
+                          textDecoration: "none",
+                          borderRadius: "8px",
+                          background: "#ede9fe",
+                          marginTop: "8px",
+                        }}
+                      >
+                        📝 Ouvrir le QCM du chapitre
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>
@@ -215,7 +229,6 @@ const CourseDetailPage = () => {
           </div>
         </aside>
 
-        {/* Zone de Contenu - Scrolling all chapters! */}
         <section className="lesson-content-area scrollable-chapters">
           {!course.enrolled ? (
             <div className="enroll-preview">
@@ -423,8 +436,89 @@ const CourseDetailPage = () => {
                       </div>
                     );
                   })}
+
+                  <div
+                    style={{
+                      marginTop: "24px",
+                      textAlign: "center",
+                      padding: "24px",
+                      background: "#faf5ff",
+                      borderRadius: "12px",
+                      border: "2px solid #ddd6fe",
+                    }}
+                  >
+                    <h3 style={{ marginBottom: "12px", color: "#7c3aed" }}>
+                      Chapitre terminé ?
+                    </h3>
+                    <Link
+                      to={`/quiz/chapter/${chapitre.id}`}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        backgroundColor: "#7c3aed",
+                        color: "white",
+                        padding: "12px 32px",
+                        borderRadius: "8px",
+                        textDecoration: "none",
+                        fontWeight: "bold",
+                        fontSize: "16px",
+                      }}
+                    >
+                      📝 Passer le QCM du chapitre
+                    </Link>
+                  </div>
                 </div>
               ))}
+
+              <div
+                style={{
+                  marginTop: "40px",
+                  marginBottom: "80px",
+                  textAlign: "center",
+                  padding: "40px",
+                  background: "#f0fdf4",
+                  borderRadius: "16px",
+                  border: "3px solid #10b981",
+                }}
+              >
+                <h2
+                  style={{
+                    fontSize: "28px",
+                    marginBottom: "12px",
+                    color: "#10b981",
+                  }}
+                >
+                  🎓 Cours complet ?
+                </h2>
+                <p
+                  style={{
+                    fontSize: "18px",
+                    marginBottom: "24px",
+                    color: "#4b5563",
+                  }}
+                >
+                  Testez vos connaissances avec l'examen final de 25 questions !
+                </p>
+                <Link
+                  to={`/quiz/course/${id}`}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    backgroundColor: "#10b981",
+                    color: "white",
+                    padding: "16px 48px",
+                    borderRadius: "12px",
+                    textDecoration: "none",
+                    fontWeight: "bold",
+                    fontSize: "18px",
+                    boxShadow: "0 4px 6px rgba(16, 185, 129, 0.3)",
+                  }}
+                >
+                  🎯 Générer et passer l'examen final
+                </Link>
+              </div>
             </div>
           )}
         </section>

@@ -44,8 +44,14 @@ api.interceptors.response.use(
 
 // Services API
 export const courseService = {
-  getAll: () => api.get("/courses"),
-  getAllCourses: () => api.get("/courses"), // Alias for backward compatibility
+  getAll: (params = null) => {
+    const url = params ? `/courses?${params.toString()}` : "/courses";
+    return api.get(url);
+  },
+  getAllCourses: (params = null) => {
+    const url = params ? `/courses?${params.toString()}` : "/courses";
+    return api.get(url);
+  }, // Alias for backward compatibility
   getCourseById: (id) => api.get(`/courses/${id}`),
   createCourse: (data) => api.post("/courses", data),
   updateCourse: (id, data) => api.put(`/courses/${id}`, data),
@@ -55,6 +61,11 @@ export const courseService = {
   getSkillTree: () => api.get("/courses"), // Use courses list for skill tree
   completeLesson: (lessonId) => api.post(`/lessons/${lessonId}/complete`),
   markAsCompleted: (courseId) => api.post(`/courses/${courseId}/mark-complete`),
+};
+
+export const quizService = {
+  getChapterQuiz: (chapterId) => api.get(`/chapters/${chapterId}/quiz`),
+  getCourseQuiz: (courseId) => api.get(`/courses/${courseId}/quiz`),
 };
 
 export const authService = {
