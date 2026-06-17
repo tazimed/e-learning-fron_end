@@ -44,6 +44,7 @@ const CreateCoursePage = () => {
             titre: "",
             contenu: "",
             video_url: "",
+            image_url: "",
             ressources: [],
           },
         ],
@@ -84,6 +85,7 @@ const CreateCoursePage = () => {
             titre: l.titre,
             contenu: l.contenu,
             video_url: l.video_url,
+            image_url: l.image_url || "",
             ressources: l.ressources || [],
           })),
         })),
@@ -163,6 +165,7 @@ const CreateCoursePage = () => {
                   titre: "",
                   contenu: "",
                   video_url: "",
+                  image_url: "",
                   ressources: [],
                 },
               ],
@@ -574,7 +577,9 @@ const CreateCoursePage = () => {
                                 className="remove-file"
                                 onClick={() => {
                                   const newChaps = [...courseData.chapitres];
-                                  newChaps[chapIndex].lecons[lecIndex].image_url = "";
+                                  newChaps[chapIndex].lecons[
+                                    lecIndex
+                                  ].image_url = "";
                                   setCourseData({
                                     ...courseData,
                                     chapitres: newChaps,
@@ -595,7 +600,9 @@ const CreateCoursePage = () => {
                                 onChange={(e) =>
                                   handleFileUpload(e, "lesson_image", (url) => {
                                     const newChaps = [...courseData.chapitres];
-                                    newChaps[chapIndex].lecons[lecIndex].image_url = url;
+                                    newChaps[chapIndex].lecons[
+                                      lecIndex
+                                    ].image_url = url;
                                     setCourseData({
                                       ...courseData,
                                       chapitres: newChaps,
