@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:9000/api";
+// Configuration de base Axios
+const API_BASE_URL = "http://localhost:8000/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,63 +9,69 @@ const api = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
   },
+  withCredentials: true,
 });
 
-// Ajouter le token s'il existe dans le localStorage au démarrage
-const token = localStorage.getItem("token");
-if (token) {
-  api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-}
+// Intercepteur pour ajouter le token aux requêtes
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);
 
 // Intercepteur pour gérer les erreurs globalement
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // #region debug-point api-intercept-error
-    fetch("http://127.0.0.1:7777/event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        session: "frontend-blank-page-v2",
-        event: "api-intercept-error",
-        data: {
-          msg: error.message,
-          url: error.config?.url,
-          status: error.response?.status,
-        },
-      }),
-    }).catch(() => {});
-    // #endregion
     if (!error.response) {
       // Erreur réseau (serveur éteint ou problème CORS)
-      console.error("Erreur réseau ou serveur inaccessible:", error);
-      return Promise.reject({
-        message:
-          "Le serveur est inaccessible. Vérifiez qu'il est lancé sur " +
-          API_BASE_URL,
-        isNetworkError: true,
-      });
+      console.error("Erreur réseau: Impossible de joindre le serveur");
+    } else if (error.response.status === 401) {
+      // Token invalide ou expiré
+      localStorage.removeItem("token");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   },
 );
 
+// Services API
 export const courseService = {
-  getAllCourses: () => api.get("/courses"),
-  getMyCourses: () => api.get("/my-courses"),
+  getAll: () => api.get("/courses"),
+  getAllCourses: () => api.get("/courses"), // Alias for backward compatibility
   getCourseById: (id) => api.get(`/courses/${id}`),
   createCourse: (data) => api.post("/courses", data),
   updateCourse: (id, data) => api.put(`/courses/${id}`, data),
-  toggleVisibility: (id) => api.post(`/courses/${id}/toggle-visibility`),
+  getMyCourses: () => api.get("/teacher/my-courses"),
+  toggleVisibility: (id) => api.put(`/courses/${id}/toggle-visibility`),
   enroll: (id) => api.post(`/courses/${id}/enroll`),
-  markAsCompleted: (id) => api.post(`/courses/${id}/complete`),
-  completeLesson: (leconId) => api.post(`/lessons/${leconId}/complete`),
-  submitQuiz: (quizId, data) => api.post(`/quizzes/${quizId}/submit`, data),
-  submitProject: (projectId, data) =>
-    api.post(`/projects/${projectId}/submit`, data),
+  getSkillTree: () => api.get("/courses"), // Use courses list for skill tree
+  completeLesson: (lessonId) => api.post(`/lessons/${lessonId}/complete`),
+  markAsCompleted: (courseId) => api.post(`/courses/${courseId}/mark-complete`),
+};
 
-  // SKILL TREE
-  getSkillTree: () => api.get("/skill-tree"),
+export const authService = {
+  login: (credentials) => api.post("/login", credentials),
+  register: (data) => api.post("/register", data),
+  logout: () => api.post("/logout"),
+  getCurrentUser: () => api.get("/user"),
+};
+
+export const mediaService = {
+  upload: (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.post("/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
 };
 
 export const projectService = {

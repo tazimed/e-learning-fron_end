@@ -46,9 +46,9 @@ const CoursesPage = () => {
             <div className="course-image-container">
               {course.image_url ? (
                 <img
-                src={`http://127.0.0.1:9000${course.image_url}`}
-                alt={course.titre}
-                className="course-thumb"
+                  src={`http://127.0.0.1:8000${course.image_url}`}
+                  alt={course.titre}
+                  className="course-thumb"
                 />
               ) : (
                 <div

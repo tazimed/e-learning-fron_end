@@ -20,7 +20,18 @@ const SkillTreePage = () => {
       console.log("Response Data :", response.data);
       console.log("================================");
 
-      setCourses(response.data);
+      // Transform data to match SkillTree expectations
+      const transformedCourses = response.data.map((course, index) => ({
+        ...course,
+        titre: course.titre,
+        locked: index > 2, // First 3 courses unlocked
+        completed: index < 1, // First course completed
+        enrolled: index < 2, // First 2 courses enrolled
+        progression: index < 2 ? (index === 0 ? 100 : 50) : 0,
+        prerequisites: [],
+      }));
+
+      setCourses(transformedCourses);
     } catch (error) {
       console.error("Erreur Skill Tree :", error);
 

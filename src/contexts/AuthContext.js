@@ -9,19 +9,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    // #region debug-point auth-init
-    fetch("http://127.0.0.1:7777/event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        session: "frontend-blank-page-v2",
-        event: "auth-init",
-        data: { hasToken: !!token },
-      }),
-    }).catch(() => {});
-    // #endregion
     if (token) {
-      // Vérifier si le token est valide et récupérer l'utilisateur
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       fetchCurrentUser();
     } else {
@@ -62,7 +50,6 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       await api.post("/register", userData);
-      // Après l'inscription, on connecte l'utilisateur
       return login(userData.email, userData.password);
     } catch (error) {
       console.error("Registration error:", error);
@@ -102,4 +89,10 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

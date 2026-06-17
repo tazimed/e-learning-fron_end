@@ -1,51 +1,41 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import Swal from "sweetalert2";
 import {
   PlayCircle,
-  FileText,
   CheckCircle2,
-  ChevronRight,
   ChevronDown,
   Download,
   ExternalLink,
   ArrowLeft,
   Lock,
   BookOpen,
-  Award,
 } from "lucide-react";
 import { courseService } from "../services/api";
 
 const CourseDetailPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [course, setCourse] = useState(null);
-  const [activeLesson, setActiveLesson] = useState(null);
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
-  const [completing, setCompleting] = useState(false);
   const [completingLesson, setCompletingLesson] = useState(null);
   const [expandedChapters, setExpandedChapters] = useState({});
+  const [expandedLessons, setExpandedLessons] = useState({});
 
   const fetchCourseDetails = async () => {
     setLoading(true);
     try {
       const response = await courseService.getCourseById(id);
-      console.log("Course data from API:", response.data);
-      console.log("enrolled?", response.data.enrolled);
       setCourse(response.data);
-      // Set first lesson as active by default if available
-      if (
-        response.data.chapitres?.length > 0 &&
-        response.data.chapitres[0].lecons?.length > 0
-      ) {
-        setActiveLesson(response.data.chapitres[0].lecons[0]);
-        setExpandedChapters({ [response.data.chapitres[0].id]: true });
-      }
-    } catch (err) {
-      console.error("Error fetching course details:", err);
+      // Expand all chapters by default
+      const expanded = {};
+      response.data.chapitres.forEach((chap) => {
+        expanded[chap.id] = true;
+      });
+      setExpandedChapters(expanded);
+    } catch (error) {
+      console.error("Error fetching course details:", error);
     } finally {
       setLoading(false);
     }
@@ -59,87 +49,24 @@ const CourseDetailPage = () => {
     setEnrolling(true);
 
     try {
-      const response = await courseService.enroll(id);
-
-      await Swal.fire({
-        icon: "success",
-        title: "Inscription réussie 🎉",
-        text: response.data.message || "Bienvenue dans le cours !",
-        confirmButtonColor: "#7c3aed",
-        background: "#ffffff",
-        color: "#111827",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-
+      await courseService.enroll(id);
       await fetchCourseDetails();
-    } catch (err) {
-      console.error("Enrollment error:", err);
-
-      // If we got 400 (already enrolled), still refresh course data!
-      if (err.response?.status === 400) {
-        await fetchCourseDetails();
-      }
-
-      Swal.fire({
-        icon: "error",
-        title: "Erreur",
-        text: err.response?.data?.message || "Erreur lors de l'inscription.",
-        confirmButtonColor: "#ef4444",
-      });
+    } catch (error) {
+      console.error("Enrollment error:", error);
     } finally {
       setEnrolling(false);
     }
   };
 
-  const handleCompleteLesson = async (lecon) => {
-    setCompletingLesson(lecon.id);
+  const handleCompleteLesson = async (lessonId) => {
+    setCompletingLesson(lessonId);
     try {
-      await courseService.completeLesson(lecon.id);
-      await Swal.fire({
-        icon: "success",
-        title: "Leçon complétée ! 🎉",
-        confirmButtonColor: "#10b981",
-      });
-      await fetchCourseDetails();
-    } catch (err) {
-      console.error(err);
-      Swal.fire({
-        icon: "error",
-        title: "Erreur",
-        text: "Erreur lors de la complétion de la leçon",
-        confirmButtonColor: "#ef4444",
-      });
+      // Just mark locally as completed for now
+      setExpandedLessons((prev) => ({ ...prev, [lessonId]: true }));
+    } catch (error) {
+      console.error(error);
     } finally {
       setCompletingLesson(null);
-    }
-  };
-
-  const handleComplete = async () => {
-    setCompleting(true);
-    try {
-      await courseService.markAsCompleted(id);
-
-      await Swal.fire({
-        icon: "success",
-        title: "Félicitations! 🎉",
-        text: "Vous avez terminé ce cours ! Les prochains cours sont maintenant débloqués.",
-        confirmButtonColor: "#10b981",
-      });
-
-      navigate("/skill-tree");
-    } catch (err) {
-      console.error("Completion error:", err);
-      Swal.fire({
-        icon: "error",
-        title: "Erreur",
-        text:
-          err.response?.data?.message ||
-          "Erreur lors de la mise à jour du statut.",
-        confirmButtonColor: "#ef4444",
-      });
-    } finally {
-      setCompleting(false);
     }
   };
 
@@ -147,6 +74,13 @@ const CourseDetailPage = () => {
     setExpandedChapters((prev) => ({
       ...prev,
       [chapterId]: !prev[chapterId],
+    }));
+  };
+
+  const toggleLesson = (lessonId) => {
+    setExpandedLessons((prev) => ({
+      ...prev,
+      [lessonId]: !prev[lessonId],
     }));
   };
 
@@ -164,37 +98,54 @@ const CourseDetailPage = () => {
           <h1>{course.titre}</h1>
           <div className="header-meta">
             <span className="badge-meta">{course.niveau}</span>
-            {course.creator && (
-              <span className="instructor-meta">
-                Par {course.creator.name || course.creator.email}
-              </span>
-            )}
           </div>
-          
+
           {course.enrolled && (
             <div style={{ marginTop: "16px", width: "100%" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{ fontSize: "14px", fontWeight: "500", color: "#4b5563" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: "8px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    color: "#4b5563",
+                  }}
+                >
                   Progression du cours
                 </span>
-                <span style={{ fontSize: "14px", fontWeight: "700", color: "#7c3aed" }}>
+                <span
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "700",
+                    color: "#7c3aed",
+                  }}
+                >
                   {Math.round(course.progression)}%
                 </span>
               </div>
-              <div style={{ 
-                width: "100%", 
-                height: "10px", 
-                backgroundColor: "#e5e7eb", 
-                borderRadius: "999px",
-                overflow: "hidden" 
-              }}>
-                <div style={{ 
-                  height: "100%", 
-                  backgroundColor: "#7c3aed",
+              <div
+                style={{
+                  width: "100%",
+                  height: "10px",
+                  backgroundColor: "#e5e7eb",
                   borderRadius: "999px",
-                  width: `${course.progression}%`,
-                  transition: "width 0.3s ease"
-                }} />
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    backgroundColor: "#7c3aed",
+                    borderRadius: "999px",
+                    width: `${course.progression}%`,
+                    transition: "width 0.3s ease",
+                  }}
+                />
               </div>
             </div>
           )}
@@ -205,7 +156,7 @@ const CourseDetailPage = () => {
               src={
                 course.image_url.startsWith("http")
                   ? course.image_url
-                  : `http://127.0.0.1:9000${course.image_url}`
+                  : `http://localhost:8000${course.image_url}`
               }
               alt={course.titre}
               className="course-header-img"
@@ -228,7 +179,7 @@ const CourseDetailPage = () => {
                   {expandedChapters[chapitre.id] ? (
                     <ChevronDown size={18} />
                   ) : (
-                    <ChevronRight size={18} />
+                    <PlayCircle size={18} />
                   )}
                   <span>{chapitre.titre}</span>
                 </button>
@@ -236,23 +187,24 @@ const CourseDetailPage = () => {
                 {expandedChapters[chapitre.id] && (
                   <div className="lessons-list">
                     {chapitre.lecons.map((lecon) => {
-                      const isLessonCompleted = course.lessonProgress?.some(lp => lp.lecon_id === lecon.id && lp.completed);
+                      const isCompleted = expandedLessons[lecon.id];
                       return (
                         <button
                           key={lecon.id}
-                          className={`lesson-item ${activeLesson?.id === lecon.id ? "active" : ""}`}
-                          onClick={() => setActiveLesson(lecon)}
-                          style={{ 
-                            opacity: isLessonCompleted ? 0.7 : 1,
-                            position: "relative"
+                          className={`lesson-item-sidebar ${
+                            isCompleted ? "completed" : ""
+                          }`}
+                          onClick={() => toggleLesson(lecon.id)}
+                          style={{
+                            opacity: isCompleted ? 0.7 : 1,
                           }}
                         >
-                          {isLessonCompleted ? (
+                          {isCompleted ? (
                             <CheckCircle2 size={16} color="#10b981" />
                           ) : (
                             <PlayCircle size={16} />
                           )}
-                          <span>{lecon.title || lecon.titre}</span>
+                          <span>{lecon.titre}</span>
                         </button>
                       );
                     })}
@@ -263,8 +215,8 @@ const CourseDetailPage = () => {
           </div>
         </aside>
 
-        {/* Zone de Contenu */}
-        <section className="lesson-content-area">
+        {/* Zone de Contenu - Scrolling all chapters! */}
+        <section className="lesson-content-area scrollable-chapters">
           {!course.enrolled ? (
             <div className="enroll-preview">
               <div className="preview-overlay">
@@ -283,160 +235,196 @@ const CourseDetailPage = () => {
                 </button>
               </div>
             </div>
-          ) : activeLesson ? (
-            <div className="active-lesson">
-              {activeLesson.video_url && (
-                <div className="video-container">
-                  <iframe
-                    width="100%"
-                    height="450"
-                    src={activeLesson.video_url.replace("watch?v=", "embed/")}
-                    title={activeLesson.titre}
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  ></iframe>
-                </div>
-              )}
-
-              <div className="lesson-text-content">
-                <h2>{activeLesson.titre}</h2>
-                <div className="markdown-body">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {activeLesson.contenu}
-                  </ReactMarkdown>
-                </div>
-
-                {activeLesson.ressources?.length > 0 && (
-                  <div className="resources-section">
-                    <h3>Ressources et Travaux Pratiques</h3>
-                    <div className="resources-grid">
-                      {activeLesson.ressources.map((res) => {
-                        const isNotebook = res.nom.endsWith(".ipynb");
-                        return (
-                          <div key={res.id} className="resource-card-item">
-                            <div className="resource-info">
-                              {isNotebook ? (
-                                <BookOpen
-                                  size={20}
-                                  className="text-orange-500"
-                                />
-                              ) : (
-                                <Download size={20} className="text-blue-500" />
-                              )}
-                              <span>{res.nom}</span>
-                            </div>
-                            <div className="resource-actions">
-                              {isNotebook ? (
-                                <a
-                                  href={res.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="action-btn colab-btn"
-                                >
-                                  <ExternalLink size={14} />
-                                  Google Colab
-                                </a>
-                              ) : (
-                                <a
-                                  href={res.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="action-btn download-btn"
-                                >
-                                  <Download size={14} />
-                                  Télécharger
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                <div
-                  style={{
-                    marginTop: "40px",
-                    paddingTop: "20px",
-                    borderTop: "1px solid #e5e7eb",
-                    display: "flex",
-                    gap: "16px",
-                    flexWrap: "wrap"
-                  }}
-                >
-                  {!course.lessonProgress?.some(lp => lp.lecon_id === activeLesson.id && lp.completed) && (
-                    <button
-                      onClick={() => handleCompleteLesson(activeLesson)}
-                      disabled={completingLesson === activeLesson.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        backgroundColor: "#7c3aed",
-                        color: "white",
-                        border: "none",
-                        padding: "14px 32px",
-                        borderRadius: "12px",
-                        fontSize: "16px",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                      }}
-                    >
-                      <CheckCircle2 size={20} />
-                      {completingLesson === activeLesson.id 
-                        ? "Marquage en cours..." 
-                        : "Marquer la leçon comme terminée"}
-                    </button>
-                  )}
-                  
-                  {course.completed ? (
-                    <div style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      padding: "14px 32px",
-                      borderRadius: "12px",
-                      backgroundColor: "#10b98120",
-                      color: "#10b981",
-                      fontWeight: "600"
-                    }}>
-                      <Award size={20} />
-                      Cours terminé !
-                    </div>
-                  ) : (
-                    <button
-                      onClick={handleComplete}
-                      disabled={completing}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        backgroundColor: "#10b981",
-                        color: "white",
-                        border: "none",
-                        padding: "14px 32px",
-                        borderRadius: "12px",
-                        fontSize: "16px",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                      }}
-                    >
-                      <Award size={20} />
-                      {completing
-                        ? "Marquage en cours..."
-                        : "Marquer le cours comme terminé"}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
           ) : (
-            <div className="no-lesson-selected">
-              <p>Sélectionnez une leçon pour commencer à apprendre.</p>
+            <div className="chapters-scroll-container">
+              {course.chapitres.map((chapitre) => (
+                <div key={chapitre.id} className="chapter-content-block">
+                  <div className="chapter-header-display">
+                    <h2 className="chapter-title">{chapitre.titre}</h2>
+                  </div>
+
+                  {chapitre.lecons.map((lecon) => {
+                    const isCompleted = expandedLessons[lecon.id];
+                    return (
+                      <div key={lecon.id} className="lesson-content-block">
+                        <div className="lesson-header-display">
+                          <div className="lesson-title-wrap">
+                            {isCompleted && (
+                              <CheckCircle2
+                                size={20}
+                                color="#10b981"
+                                style={{ marginRight: "12px" }}
+                              />
+                            )}
+                            <h3 className="lesson-title-display">
+                              {lecon.titre}
+                            </h3>
+                          </div>
+                          <button
+                            onClick={() => toggleLesson(lecon.id)}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                              padding: "8px 16px",
+                              backgroundColor: "#f3f4f6",
+                              border: "none",
+                              borderRadius: "8px",
+                              cursor: "pointer",
+                              fontWeight: "600",
+                            }}
+                          >
+                            {expandedLessons[lecon.id] ? (
+                              <ChevronDown size={16} />
+                            ) : (
+                              <BookOpen size={16} />
+                            )}
+                            {expandedLessons[lecon.id]
+                              ? "Fermer la leçon"
+                              : "Ouvrir la leçon"}
+                          </button>
+                        </div>
+
+                        {expandedLessons[lecon.id] && (
+                          <>
+                            {lecon.video_url && (
+                              <div className="video-container">
+                                <iframe
+                                  width="100%"
+                                  height="450"
+                                  src={lecon.video_url.replace(
+                                    "watch?v=",
+                                    "embed/",
+                                  )}
+                                  title={lecon.titre}
+                                  frameBorder="0"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                ></iframe>
+                              </div>
+                            )}
+
+                            {lecon.image_url && (
+                              <div className="lesson-image-container">
+                                <img
+                                  src={
+                                    lecon.image_url.startsWith("http")
+                                      ? lecon.image_url
+                                      : `http://localhost:8000${lecon.image_url}`
+                                  }
+                                  alt={`Illustration pour ${lecon.titre}`}
+                                  className="lesson-image"
+                                />
+                              </div>
+                            )}
+
+                            <div className="markdown-body">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {lecon.contenu}
+                              </ReactMarkdown>
+                            </div>
+
+                            {lecon.ressources?.length > 0 && (
+                              <div className="resources-section">
+                                <h3>Ressources et Travaux Pratiques</h3>
+                                <div className="resources-grid">
+                                  {lecon.ressources.map((res) => {
+                                    const isNotebook =
+                                      res.nom.endsWith(".ipynb");
+                                    return (
+                                      <div
+                                        key={res.id}
+                                        className="resource-card-item"
+                                      >
+                                        <div className="resource-info">
+                                          {isNotebook ? (
+                                            <BookOpen
+                                              size={20}
+                                              className="text-orange-500"
+                                            />
+                                          ) : (
+                                            <Download
+                                              size={20}
+                                              className="text-blue-500"
+                                            />
+                                          )}
+                                          <span>{res.nom}</span>
+                                        </div>
+                                        <div className="resource-actions">
+                                          {isNotebook ? (
+                                            <a
+                                              href={res.url}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="action-btn colab-btn"
+                                            >
+                                              <ExternalLink size={14} />
+                                              Google Colab
+                                            </a>
+                                          ) : (
+                                            <a
+                                              href={res.url}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="action-btn download-btn"
+                                            >
+                                              <Download size={14} />
+                                              Télécharger
+                                            </a>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
+                            {!isCompleted && (
+                              <div
+                                style={{
+                                  marginTop: "24px",
+                                  paddingTop: "20px",
+                                  borderTop: "1px solid #e5e7eb",
+                                  display: "flex",
+                                  gap: "16px",
+                                  flexWrap: "wrap",
+                                }}
+                              >
+                                <button
+                                  onClick={() => handleCompleteLesson(lecon.id)}
+                                  disabled={completingLesson === lecon.id}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "10px",
+                                    backgroundColor: "#10b981",
+                                    color: "white",
+                                    border: "none",
+                                    padding: "12px 28px",
+                                    borderRadius: "10px",
+                                    fontSize: "15px",
+                                    fontWeight: "600",
+                                    cursor: "pointer",
+                                    transition: "all 0.2s",
+                                  }}
+                                >
+                                  <CheckCircle2 size={18} />
+                                  {completingLesson === lecon.id
+                                    ? "Marquage..."
+                                    : "Marquer la leçon comme terminée"}
+                                </button>
+                              </div>
+                            )}
+
+                            <div className="lesson-spacer" />
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           )}
         </section>

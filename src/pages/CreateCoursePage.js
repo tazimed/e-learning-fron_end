@@ -564,6 +564,48 @@ const CreateCoursePage = () => {
                             }}
                           />
                         </div>
+
+                        <div className="file-upload-wrapper small">
+                          {lec.image_url ? (
+                            <div className="preview-image">
+                              <img src={lec.image_url} alt="preview" />
+
+                              <button
+                                className="remove-file"
+                                onClick={() => {
+                                  const newChaps = [...courseData.chapitres];
+                                  newChaps[chapIndex].lecons[lecIndex].image_url = "";
+                                  setCourseData({
+                                    ...courseData,
+                                    chapitres: newChaps,
+                                  });
+                                }}
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                          ) : (
+                            <label className="upload-placeholder small">
+                              <ImageIcon size={18} />
+                              <span>Image explicative</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                hidden
+                                onChange={(e) =>
+                                  handleFileUpload(e, "lesson_image", (url) => {
+                                    const newChaps = [...courseData.chapitres];
+                                    newChaps[chapIndex].lecons[lecIndex].image_url = url;
+                                    setCourseData({
+                                      ...courseData,
+                                      chapitres: newChaps,
+                                    });
+                                  })
+                                }
+                              />
+                            </label>
+                          )}
+                        </div>
                       </div>
                     ))}
 
