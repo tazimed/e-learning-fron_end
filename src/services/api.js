@@ -14,27 +14,27 @@ const api = axios.create({
 
 // Intercepteur pour ajouter le token aux requêtes
 api.interceptors.request.use(
-  (config) => {
+  function (config) {
     const token = localStorage.getItem("token");
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = "Bearer " + token;
     }
     return config;
   },
-  (error) => {
+  function (error) {
     return Promise.reject(error);
   },
 );
 
 // Intercepteur pour gérer les erreurs globalement
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  function (response) {
+    return response;
+  },
+  function (error) {
     if (!error.response) {
-      // Erreur réseau (serveur éteint ou problème CORS)
       console.error("Erreur réseau: Impossible de joindre le serveur");
     } else if (error.response.status === 401) {
-      // Token invalide ou expiré
       localStorage.removeItem("token");
       window.location.href = "/login";
     }
@@ -44,40 +44,73 @@ api.interceptors.response.use(
 
 // Services API
 export const courseService = {
-  getAll: (params = null) => {
-    const url = params ? `/courses?${params.toString()}` : "/courses";
+  getAll: function (params) {
+    var url = params ? "/courses?" + params.toString() : "/courses";
     return api.get(url);
   },
-  getAllCourses: (params = null) => {
-    const url = params ? `/courses?${params.toString()}` : "/courses";
+  getAllCourses: function (params) {
+    var url = params ? "/courses?" + params.toString() : "/courses";
     return api.get(url);
-  }, // Alias for backward compatibility
-  getCourseById: (id) => api.get(`/courses/${id}`),
-  createCourse: (data) => api.post("/courses", data),
-  updateCourse: (id, data) => api.put(`/courses/${id}`, data),
-  getMyCourses: () => api.get("/teacher/my-courses"),
-  toggleVisibility: (id) => api.put(`/courses/${id}/toggle-visibility`),
-  enroll: (id) => api.post(`/courses/${id}/enroll`),
-  getSkillTree: () => api.get("/courses"), // Use courses list for skill tree
-  completeLesson: (lessonId) => api.post(`/lessons/${lessonId}/complete`),
-  markAsCompleted: (courseId) => api.post(`/courses/${courseId}/mark-complete`),
+  },
+  getCourseById: function (id) {
+    return api.get("/courses/" + id);
+  },
+  createCourse: function (data) {
+    return api.post("/courses", data);
+  },
+  updateCourse: function (id, data) {
+    return api.put("/courses/" + id, data);
+  },
+  getMyCourses: function () {
+    return api.get("/teacher/my-courses");
+  },
+  toggleVisibility: function (id) {
+    return api.put("/courses/" + id + "/toggle-visibility");
+  },
+  enroll: function (id) {
+    return api.post("/courses/" + id + "/enroll");
+  },
+  getSkillTree: function () {
+    return api.get("/courses");
+  },
+  completeLesson: function (lessonId) {
+    return api.post("/lessons/" + lessonId + "/complete");
+  },
+  markAsCompleted: function (courseId) {
+    return api.post("/courses/" + courseId + "/mark-complete");
+  },
 };
 
 export const quizService = {
-  getChapterQuiz: (chapterId) => api.get(`/chapters/${chapterId}/quiz`),
-  getCourseQuiz: (courseId) => api.get(`/courses/${courseId}/quiz`),
+  getChapterQuiz: function (chapterId) {
+    return api.get("/chapters/" + chapterId + "/quiz");
+  },
+  getCourseQuiz: function (courseId) {
+    return api.get("/courses/" + courseId + "/quiz");
+  },
+  submitQuiz: function (courseId, data) {
+    return api.post("/courses/" + courseId + "/quiz/submit", data);
+  },
 };
 
 export const authService = {
-  login: (credentials) => api.post("/login", credentials),
-  register: (data) => api.post("/register", data),
-  logout: () => api.post("/logout"),
-  getCurrentUser: () => api.get("/user"),
+  login: function (credentials) {
+    return api.post("/login", credentials);
+  },
+  register: function (data) {
+    return api.post("/register", data);
+  },
+  logout: function () {
+    return api.post("/logout");
+  },
+  getCurrentUser: function () {
+    return api.get("/user");
+  },
 };
 
 export const mediaService = {
-  upload: (file) => {
-    const formData = new FormData();
+  upload: function (file) {
+    var formData = new FormData();
     formData.append("file", file);
     return api.post("/upload", formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -86,7 +119,36 @@ export const mediaService = {
 };
 
 export const projectService = {
-  getAllProjects: () => api.get("/projects"),
+  getAllProjects: function () {
+    return api.get("/projects");
+  },
+};
+
+export const certificateService = {
+  generate: function (courseId) {
+    return api.post("/courses/" + courseId + "/certificate/generate");
+  },
+  get: function (courseId) {
+    return api.get("/courses/" + courseId + "/certificate");
+  },
+  getAll: function () {
+    return api.get("/certificates");
+  },
+};
+
+export const profileService = {
+  getProfile: function () {
+    return api.get("/profile");
+  },
+};
+
+export const concentrationService = {
+  getStudents: function (courseId) {
+    var url = courseId
+      ? "/teacher/concentration?course=" + courseId
+      : "/teacher/concentration";
+    return api.get(url);
+  },
 };
 
 export default api;

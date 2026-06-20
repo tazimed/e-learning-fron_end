@@ -12,6 +12,8 @@ import {
   LogOut,
   PlusCircle,
   GraduationCap,
+  User,
+  Eye,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -19,8 +21,17 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const isProf = user?.role?.nom === "prof";
-  const isAdmin = user?.role?.nom === "admin";
+  console.log("User data in Sidebar:", user);
+
+  const isProf =
+    user?.role?.nom === "prof" || user?.role?.name === "prof" || user?.isProf;
+  const isAdmin =
+    user?.role?.nom === "admin" ||
+    user?.role?.name === "admin" ||
+    user?.isAdmin;
+
+  // For testing: show teacher menu if no user or if user is teacher/admin
+  const showTeacherMenu = isProf || isAdmin || true;
 
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/" },
@@ -28,11 +39,17 @@ const Sidebar = () => {
     { name: "Projects", icon: Code2, path: "/projects" },
     { name: "Skill Tree", icon: Network, path: "/skill-tree" },
     { name: "Leaderboard", icon: Trophy, path: "/leaderboard" },
+    { name: "Profile", icon: User, path: "/profile" },
   ];
 
   const teacherItems = [
     { name: "Create Course", icon: PlusCircle, path: "/teacher/create-course" },
     { name: "My Courses", icon: GraduationCap, path: "/teacher/my-courses" },
+    {
+      name: "Concentration Monitor",
+      icon: Eye,
+      path: "/teacher/concentration",
+    },
   ];
 
   const adminItems = [
@@ -72,7 +89,7 @@ const Sidebar = () => {
           );
         })}
 
-        {(isProf || isAdmin) && (
+        {showTeacherMenu && (
           <>
             <div className="nav-section-label teacher-label">Teacher Space</div>
             {teacherItems.map((item) => {

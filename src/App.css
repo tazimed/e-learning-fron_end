@@ -26,6 +26,7 @@ body {
   position: fixed;
   height: 100vh;
   z-index: 100;
+  overflow-y: auto;
 }
 
 .main-content {
@@ -1623,14 +1624,14 @@ body {
   background: white;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
 }
 
 .teacher-course-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 60px rgba(0,0,0,0.12);
+  box-shadow: 0 12px 60px rgba(0, 0, 0, 0.12);
   border-color: #cbd5e1;
 }
 
@@ -1648,7 +1649,7 @@ body {
   border-radius: 16px;
   overflow: hidden;
   flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .course-image-mini img {
@@ -1773,7 +1774,7 @@ body {
   background: white;
   border-radius: 24px;
   padding: 40px;
-  box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
 }
 
@@ -1785,7 +1786,7 @@ body {
 }
 
 .chapter-header-display::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -2px;
   left: 0;
@@ -1839,7 +1840,7 @@ body {
   margin: 32px 0;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 12px 60px rgba(0,0,0,0.12);
+  box-shadow: 0 12px 60px rgba(0, 0, 0, 0.12);
   border: 2px solid #e2e8f0;
 }
 
@@ -1870,14 +1871,14 @@ body {
   background: white;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
 }
 
 .course-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 16px 80px rgba(0,0,0,0.14);
+  box-shadow: 0 16px 80px rgba(0, 0, 0, 0.14);
   border-color: #8b5cf6;
 }
 
@@ -1912,7 +1913,7 @@ body {
   border-radius: 999px;
   font-weight: 800;
   font-size: 0.85rem;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   color: #8b5cf6;
 }
 
@@ -1997,8 +1998,12 @@ body {
   box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
 }
 
-.text-orange { color: #f59e0b; }
-.text-success { color: #10b981; }
+.text-orange {
+  color: #f59e0b;
+}
+.text-success {
+  color: #10b981;
+}
 
 .empty-state {
   grid-column: 1 / -1;

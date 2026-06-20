@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -12,16 +12,19 @@ import {
   Lock,
   BookOpen,
 } from "lucide-react";
-import { courseService } from "../services/api";
+import { courseService, certificateService } from "../services/api";
 
 const CourseDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
   const [completingLesson, setCompletingLesson] = useState(null);
   const [expandedChapters, setExpandedChapters] = useState({});
   const [expandedLessons, setExpandedLessons] = useState({});
+  const [certificate, setCertificate] = useState(null);
+  const [generatingCertificate, setGeneratingCertificate] = useState(false);
 
   const fetchCourseDetails = async () => {
     setLoading(true);
@@ -33,10 +36,35 @@ const CourseDetailPage = () => {
         expanded[chap.id] = true;
       });
       setExpandedChapters(expanded);
+
+      // Fetch certificate if enrolled
+      if (response.data.enrolled) {
+        try {
+          const certResponse = await certificateService.get(id);
+          setCertificate(certResponse.data);
+        } catch (err) {
+          // Certificate doesn't exist yet, that's okay
+          setCertificate(null);
+        }
+      }
     } catch (error) {
       console.error("Error fetching course details:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateCertificate = async () => {
+    setGeneratingCertificate(true);
+    try {
+      await certificateService.generate(id);
+      await fetchCourseDetails();
+      navigate(`/certificate/${id}`);
+    } catch (error) {
+      console.error("Error generating certificate:", error);
+      alert(error.response?.data?.message || "Failed to generate certificate");
+    } finally {
+      setGeneratingCertificate(false);
     }
   };
 
@@ -59,7 +87,8 @@ const CourseDetailPage = () => {
   const handleCompleteLesson = async (lessonId) => {
     setCompletingLesson(lessonId);
     try {
-      setExpandedLessons((prev) => ({ ...prev, [lessonId]: true }));
+      await courseService.completeLesson(lessonId);
+      await fetchCourseDetails();
     } catch (error) {
       console.error(error);
     } finally {
@@ -183,7 +212,7 @@ const CourseDetailPage = () => {
                 {expandedChapters[chapitre.id] && (
                   <div className="lessons-list">
                     {chapitre.lecons.map((lecon) => {
-                      const isCompleted = expandedLessons[lecon.id];
+                      const isCompleted = lecon.completed;
                       return (
                         <button
                           key={lecon.id}
@@ -257,7 +286,7 @@ const CourseDetailPage = () => {
                   </div>
 
                   {chapitre.lecons.map((lecon) => {
-                    const isCompleted = expandedLessons[lecon.id];
+                    const isCompleted = lecon.completed;
                     return (
                       <div key={lecon.id} className="lesson-content-block">
                         <div className="lesson-header-display">
@@ -477,47 +506,126 @@ const CourseDetailPage = () => {
                   marginBottom: "80px",
                   textAlign: "center",
                   padding: "40px",
-                  background: "#f0fdf4",
+                  background: certificate ? "#f0fdf4" : "#faf5ff",
                   borderRadius: "16px",
-                  border: "3px solid #10b981",
+                  border: `3px solid ${certificate ? "#10b981" : "#ddd6fe"}`,
                 }}
               >
-                <h2
-                  style={{
-                    fontSize: "28px",
-                    marginBottom: "12px",
-                    color: "#10b981",
-                  }}
-                >
-                  🎓 Cours complet ?
-                </h2>
-                <p
-                  style={{
-                    fontSize: "18px",
-                    marginBottom: "24px",
-                    color: "#4b5563",
-                  }}
-                >
-                  Testez vos connaissances avec l'examen final de 25 questions !
-                </p>
-                <Link
-                  to={`/quiz/course/${id}`}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    backgroundColor: "#10b981",
-                    color: "white",
-                    padding: "16px 48px",
-                    borderRadius: "12px",
-                    textDecoration: "none",
-                    fontWeight: "bold",
-                    fontSize: "18px",
-                    boxShadow: "0 4px 6px rgba(16, 185, 129, 0.3)",
-                  }}
-                >
-                  🎯 Générer et passer l'examen final
-                </Link>
+                {certificate ? (
+                  <>
+                    <h2
+                      style={{
+                        fontSize: "28px",
+                        marginBottom: "12px",
+                        color: "#10b981",
+                      }}
+                    >
+                      🎓 Félicitations ! Vous avez terminé le cours
+                    </h2>
+                    <p
+                      style={{
+                        fontSize: "18px",
+                        marginBottom: "24px",
+                        color: "#4b5563",
+                      }}
+                    >
+                      Vous avez obtenu votre certificat !
+                    </p>
+                    <Link
+                      to={`/certificate/${id}`}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        backgroundColor: "#10b981",
+                        color: "white",
+                        padding: "16px 48px",
+                        borderRadius: "12px",
+                        textDecoration: "none",
+                        fontWeight: "bold",
+                        fontSize: "18px",
+                        boxShadow: "0 4px 6px rgba(16, 185, 129, 0.3)",
+                      }}
+                    >
+                      📜 Voir mon certificat
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <h2
+                      style={{
+                        fontSize: "28px",
+                        marginBottom: "12px",
+                        color: "#7c3aed",
+                      }}
+                    >
+                      🎓 Cours complet ?
+                    </h2>
+                    <p
+                      style={{
+                        fontSize: "18px",
+                        marginBottom: "24px",
+                        color: "#4b5563",
+                      }}
+                    >
+                      Testez vos connaissances avec l'examen final de 25
+                      questions !
+                    </p>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "12px",
+                        justifyContent: "center",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <Link
+                        to={`/quiz/course/${id}`}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          backgroundColor: "#7c3aed",
+                          color: "white",
+                          padding: "16px 48px",
+                          borderRadius: "12px",
+                          textDecoration: "none",
+                          fontWeight: "bold",
+                          fontSize: "18px",
+                          boxShadow: "0 4px 6px rgba(124, 58, 237, 0.3)",
+                        }}
+                      >
+                        🎯 Générer et passer l'examen final
+                      </Link>
+                      {course.progression === 100 && (
+                        <button
+                          onClick={handleGenerateCertificate}
+                          disabled={generatingCertificate}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            backgroundColor: "#10b981",
+                            color: "white",
+                            padding: "16px 48px",
+                            borderRadius: "12px",
+                            border: "none",
+                            fontWeight: "bold",
+                            fontSize: "18px",
+                            boxShadow: "0 4px 6px rgba(16, 185, 129, 0.3)",
+                            cursor: generatingCertificate
+                              ? "not-allowed"
+                              : "pointer",
+                          }}
+                        >
+                          {generatingCertificate
+                            ? "Génération..."
+                            : "📜 Générer le certificat"}
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}

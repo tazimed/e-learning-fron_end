@@ -18,6 +18,9 @@ import RegisterPage from "./pages/RegisterPage";
 import CreateCoursePage from "./pages/CreateCoursePage";
 import MyCoursesPage from "./pages/MyCoursesPage";
 import QuizPage from "./pages/QuizPage";
+import CertificatePage from "./pages/CertificatePage";
+import ProfilePage from "./pages/ProfilePage";
+import ConcentrationDashboard from "./pages/ConcentrationDashboard";
 import "./App.css";
 
 function App() {
@@ -48,6 +51,12 @@ function App() {
             <Route path="quiz/chapter/:chapterId" element={<QuizPage />} />
             <Route path="quiz/course/:courseId" element={<QuizPage />} />
 
+            {/* Certificate Route */}
+            <Route path="certificate/:courseId" element={<CertificatePage />} />
+
+            {/* Profile Route */}
+            <Route path="profile" element={<ProfilePage />} />
+
             {/* Teacher Routes */}
             <Route
               path="teacher/create-course"
@@ -58,6 +67,10 @@ function App() {
               element={<CreateCoursePage />}
             />
             <Route path="teacher/my-courses" element={<MyCoursesPage />} />
+            <Route
+              path="teacher/concentration"
+              element={<ConcentrationDashboard />}
+            />
           </Route>
 
           {/* Fallback */}
