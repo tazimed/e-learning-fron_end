@@ -23,11 +23,14 @@ const SkillTreePage = () => {
       // Transform data to match SkillTree expectations
       const transformedCourses = response.data.map((course, index) => ({
         ...course,
-        titre: course.titre,
-        locked: index > 2, // First 3 courses unlocked
-        completed: index < 1, // First course completed
-        enrolled: index < 2, // First 2 courses enrolled
-        progression: index < 2 ? (index === 0 ? 100 : 50) : 0,
+        id: course.id,
+        titre: course.title, // Backend returns 'title', we need 'titre'
+        description: course.description,
+        image_url: course.image_url,
+        locked: index > 0, // Only first course unlocked initially
+        completed: course.progress === 100,
+        enrolled: course.enrolled,
+        progression: course.progress,
         prerequisites: [],
       }));
 
@@ -97,8 +100,25 @@ const SkillTreePage = () => {
                       ? "completed-circle"
                       : "available-circle"
                 }`}
+                style={{
+                  overflow: "hidden",
+                  padding: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                {course.locked ? (
+                {course.image_url ? (
+                  <img
+                    src={`http://localhost:8000${course.image_url}`}
+                    alt={course.titre}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : course.locked ? (
                   <Lock size={34} />
                 ) : course.completed ? (
                   <CheckCircle size={34} />
@@ -115,7 +135,8 @@ const SkillTreePage = () => {
                 <p>
                   {course.locked
                     ? "Complétez les prérequis pour débloquer celui-ci."
-                    : "Cours disponible dans votre parcours IA."}
+                    : course.description ||
+                      "Cours disponible dans votre parcours IA."}
                 </p>
 
                 {course.enrolled && !course.completed && (
@@ -173,7 +194,11 @@ const SkillTreePage = () => {
 
                 {!course.locked && (
                   <Link to={`/courses/${course.id}`} className="roadmap-btn">
-                    {course.completed ? "Revoir le cours" : "Commencer"}
+                    {course.completed
+                      ? "Revoir le cours"
+                      : course.enrolled
+                        ? "Continuer"
+                        : "Commencer"}
                   </Link>
                 )}
               </div>

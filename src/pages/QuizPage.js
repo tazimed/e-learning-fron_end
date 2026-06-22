@@ -84,6 +84,266 @@ const QuizPage = () => {
       explanation:
         "Le prétraitement inclut le nettoyage, la normalisation, la gestion des valeurs manquantes, etc.",
     },
+    {
+      id: 6,
+      question: "Quel algorithme est utilisé pour le clustering ?",
+      options: [
+        "Régression Logistique",
+        "K-Means",
+        "Arbre de Décision",
+        "Réseau de Neurones",
+      ],
+      answer: "K-Means",
+      explanation:
+        "K-Means est un algorithme de clustering non supervisé qui groupe les données en k clusters.",
+    },
+    {
+      id: 7,
+      question: "Qu'est-ce que l'overfitting (sur-apprentissage) ?",
+      options: [
+        "Le modèle ne peut pas apprendre les données",
+        "Le modèle apprend trop bien les données d'entraînement et ne généralise pas",
+        "Le modèle est trop simple",
+        "Le modèle est trop lent",
+      ],
+      answer: "Le modèle apprend trop bien les données d'entraînement et ne généralise pas",
+      explanation:
+        "L'overfitting se produit quand le modèle mémorise les données d'entraînement mais performe mal sur de nouvelles données.",
+    },
+    {
+      id: 8,
+      question: "Quelle métrique mesure la proportion de vrais positifs parmi tous les positifs prédits ?",
+      options: [
+        "Précision",
+        "Rappel (Recall)",
+        "F1-Score",
+        "Accuracy",
+      ],
+      answer: "Précision",
+      explanation:
+        "La précision = VP / (VP + FP) - elle mesure combien des prédictions positives sont correctes.",
+    },
+    {
+      id: 9,
+      question: "Qu'est-ce que la régression linéaire ?",
+      options: [
+        "Un algorithme de classification",
+        "Un algorithme pour prédire une valeur continue",
+        "Un algorithme de clustering",
+        "Un algorithme de réduction de dimension",
+      ],
+      answer: "Un algorithme pour prédire une valeur continue",
+      explanation:
+        "La régression linéaire modélise la relation entre une variable dépendante et une ou plusieurs variables indépendantes.",
+    },
+    {
+      id: 10,
+      question: "Quel est le rôle de l'ensemble de test (test set) ?",
+      options: [
+        "Entraîner le modèle",
+        "Évaluer la performance du modèle sur des données inconnues",
+        "Valider les hyperparamètres",
+        "Nettoyer les données",
+      ],
+      answer: "Évaluer la performance du modèle sur des données inconnues",
+      explanation:
+        "L'ensemble de test permet d'évaluer comment le modèle généralise sur des données qu'il n'a jamais vues.",
+    },
+    {
+      id: 11,
+      question: "Qu'est-ce que l'apprentissage non supervisé ?",
+      options: [
+        "Apprentissage avec des étiquettes",
+        "Apprentissage sans étiquettes, pour découvrir des structures",
+        "Apprentissage par récompenses",
+        "Apprentissage uniquement avec des données textuelles",
+      ],
+      answer: "Apprentissage sans étiquettes, pour découvrir des structures",
+      explanation:
+        "L'apprentissage non supervisé trouve des patterns dans des données non étiquetées.",
+    },
+    {
+      id: 12,
+      question: "Quel algorithme utilise des arbres de décision combinés ?",
+      options: [
+        "Régression Linéaire",
+        "Random Forest",
+        "K-NN",
+        "PCA",
+      ],
+      answer: "Random Forest",
+      explanation:
+        "Random Forest est un ensemble d'arbres de décision qui améliore la performance via le bagging.",
+    },
+    {
+      id: 13,
+      question: "Que signifie PCA ?",
+      options: [
+        "Principal Component Analysis",
+        "Primary Computer Algorithm",
+        "Predictive Classification Analysis",
+        "Pattern Recognition Algorithm",
+      ],
+      answer: "Principal Component Analysis",
+      explanation:
+        "PCA est une technique de réduction de dimension qui transforme les données en composantes principales.",
+    },
+    {
+      id: 14,
+      question: "Qu'est-ce que le Deep Learning ?",
+      options: [
+        "Apprentissage avec des données profondes",
+        "Sous-domaine du ML basé sur des réseaux de neurones profonds",
+        "Apprentissage lent",
+        "Apprentissage uniquement pour les images",
+      ],
+      answer: "Sous-domaine du ML basé sur des réseaux de neurones profonds",
+      explanation:
+        "Le Deep Learning utilise des réseaux de neurones avec plusieurs couches pour apprendre des représentations complexes.",
+    },
+    {
+      id: 15,
+      question: "Quel est l'avantage de la normalisation des données ?",
+      options: [
+        "Rend les données plus petites",
+        "Permet aux algorithmes de converger plus vite et de meilleure performance",
+        "Supprime les données manquantes",
+        "Ajoute des données",
+      ],
+      answer: "Permet aux algorithmes de converger plus vite et de meilleure performance",
+      explanation:
+        "La normalisation met les features à la même échelle, ce qui améliore la performance de nombreux algorithmes ML.",
+    },
+    {
+      id: 16,
+      question: "Qu'est-ce que la validation croisée (cross-validation) ?",
+      options: [
+        "Test unique sur un ensemble de test",
+        "Technique pour évaluer le modèle en divisant les données en plusieurs folds",
+        "Validation manuelle",
+        "Validation seulement pour les réseaux de neurones",
+      ],
+      answer: "Technique pour évaluer le modèle en divisant les données en plusieurs folds",
+      explanation:
+        "La validation croisée utilise plusieurs divisions des données pour une évaluation plus robuste du modèle.",
+    },
+    {
+      id: 17,
+      question: "Quel algorithme est basé sur la similarité entre voisins ?",
+      options: [
+        "SVM",
+        "K-Nearest Neighbors (K-NN)",
+        "Régression Logistique",
+        "Naive Bayes",
+      ],
+      answer: "K-Nearest Neighbors (K-NN)",
+      explanation:
+        "K-NN classe un point en se basant sur les classes de ses k voisins les plus proches.",
+    },
+    {
+      id: 18,
+      question: "Qu'est-ce que la fonction de perte (loss function) ?",
+      options: [
+        "Fonction qui augmente la performance",
+        "Fonction qui mesure l'erreur entre prédictions et vraies valeurs",
+        "Fonction qui sauvegarde le modèle",
+        "Fonction qui charge les données",
+      ],
+      answer: "Fonction qui mesure l'erreur entre prédictions et vraies valeurs",
+      explanation:
+        "La fonction de perte quantifie combien les prédictions du modèle sont éloignées des valeurs réelles.",
+    },
+    {
+      id: 19,
+      question: "Quel est le but de l'apprentissage par renforcement ?",
+      options: [
+        "Classifier des données",
+        "Regrouper des données",
+        "Apprendre par essais et erreurs via des récompenses",
+        "Prédire des valeurs continues",
+      ],
+      answer: "Apprendre par essais et erreurs via des récompenses",
+      explanation:
+        "L'apprentissage par renforcement utilise un agent qui apprend à prendre des décisions pour maximiser une récompense.",
+    },
+    {
+      id: 20,
+      question: "Que mesure l'accuracy (exactitude) ?",
+      options: [
+        "La proportion de prédictions correctes",
+        "Seulement les vrais positifs",
+        "Seulement les vrais négatifs",
+        "La vitesse du modèle",
+      ],
+      answer: "La proportion de prédictions correctes",
+      explanation:
+        "Accuracy = (VP + VN) / (VP + VN + FP + FN) - proportion totale de prédictions correctes.",
+    },
+    {
+      id: 21,
+      question: "Qu'est-ce qu'un hyperparamètre ?",
+      options: [
+        "Paramètre appris par le modèle",
+        "Paramètre défini avant l'entraînement",
+        "Paramètre uniquement pour les réseaux de neurones",
+        "Paramètre qui change automatiquement",
+      ],
+      answer: "Paramètre défini avant l'entraînement",
+      explanation:
+        "Les hyperparamètres sont configurés avant l'entraînement (ex: taux d'apprentissage, nombre de clusters).",
+    },
+    {
+      id: 22,
+      question: "Quel algorithme est probabiliste et basé sur le théorème de Bayes ?",
+      options: [
+        "SVM",
+        "Naive Bayes",
+        "K-Means",
+        "Random Forest",
+      ],
+      answer: "Naive Bayes",
+      explanation:
+        "Naive Bayes est un classifieur probabiliste basé sur le théorème de Bayes avec l'hypothèse d'indépendance naïve.",
+    },
+    {
+      id: 23,
+      question: "Quelle technique permet de réduire l'overfitting ?",
+      options: [
+        "Augmenter le nombre de features",
+        "Utiliser la régularisation",
+        "Entraîner plus longtemps",
+        "Supprimer l'ensemble de validation",
+      ],
+      answer: "Utiliser la régularisation",
+      explanation:
+        "La régularisation (ex: L1, L2) ajoute une pénalité aux poids pour éviter le sur-apprentissage.",
+    },
+    {
+      id: 24,
+      question: "Qu'est-ce que le Feature Engineering ?",
+      options: [
+        "Création et transformation de variables pour améliorer le modèle",
+        "Entraînement du modèle",
+        "Test du modèle",
+        "Déploiement du modèle",
+      ],
+      answer: "Création et transformation de variables pour améliorer le modèle",
+      explanation:
+        "Le Feature Engineering consiste à créer, sélectionner et transformer des features pour améliorer la performance du modèle.",
+    },
+    {
+      id: 25,
+      question: "Quel est l'ordre typique d'un pipeline ML ?",
+      options: [
+        "Entraînement → Test → Prétraitement → Déploiement",
+        "Prétraitement → Entraînement → Évaluation → Déploiement",
+        "Déploiement → Entraînement → Test → Prétraitement",
+        "Test → Entraînement → Prétraitement → Déploiement",
+      ],
+      answer: "Prétraitement → Entraînement → Évaluation → Déploiement",
+      explanation:
+        "Le pipeline ML typique: collecte → prétraitement → entraînement → évaluation → déploiement.",
+    },
   ];
 
   useEffect(() => {
@@ -112,7 +372,10 @@ const QuizPage = () => {
       }
     };
 
-    fetchQuiz();
+    // Use hardcoded data immediately for screenshots
+    setQuestions(hardcodedQuestions);
+    setLoading(false);
+    // fetchQuiz();
   }, [courseId, chapterId]);
 
   const handleAnswerChange = (questionId, answer) => {

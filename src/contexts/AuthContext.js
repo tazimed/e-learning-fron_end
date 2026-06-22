@@ -3,11 +3,29 @@ import api from "../services/api";
 
 const AuthContext = createContext();
 
+// Static user for screenshots
+const staticUser = {
+  id: 1,
+  name: "Étudiant Demonstration",
+  email: "etudiant@example.com",
+  nom: "Étudiant",
+  prenom: "Demonstration",
+  role: {
+    id: 3,
+    nom: "etudiant"
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Use static user for screenshots
+    setUser(staticUser);
+    setLoading(false);
+    
+    /*
     const token = localStorage.getItem("token");
     if (token) {
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -15,6 +33,7 @@ export const AuthProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
+    */
   }, []);
 
   const fetchCurrentUser = async () => {

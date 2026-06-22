@@ -151,4 +151,10 @@ export const concentrationService = {
   },
 };
 
+export const leaderboardService = {
+  getLeaderboard: function () {
+    return api.get("/leaderboard");
+  },
+};
+
 export default api;

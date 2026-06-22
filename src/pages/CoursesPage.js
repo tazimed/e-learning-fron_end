@@ -107,7 +107,7 @@ const CoursesPage = () => {
                 <img
                   src={course.image_url.startsWith('http') 
                     ? course.image_url 
-                    : `http://127.0.0.1:8000${course.image_url}`}
+                    : `http://localhost:8000${course.image_url}`}
                   alt={course.title}
                   className="course-thumb"
                 />

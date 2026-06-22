@@ -11,6 +11,8 @@ import {
   ArrowLeft,
   Lock,
   BookOpen,
+  Menu,
+  X,
 } from "lucide-react";
 import { courseService, certificateService } from "../services/api";
 
@@ -25,12 +27,20 @@ const CourseDetailPage = () => {
   const [expandedLessons, setExpandedLessons] = useState({});
   const [certificate, setCertificate] = useState(null);
   const [generatingCertificate, setGeneratingCertificate] = useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
 
   const fetchCourseDetails = async () => {
     setLoading(true);
     try {
       const response = await courseService.getCourseById(id);
-      setCourse(response.data);
+      // Prepend backend URL to image if it's a relative path
+      const courseData = {
+        ...response.data,
+        image_url: response.data.image_url
+          ? `http://localhost:8000${response.data.image_url}`
+          : null,
+      };
+      setCourse(courseData);
       const expanded = {};
       response.data.chapitres.forEach((chap) => {
         expanded[chap.id] = true;
@@ -117,10 +127,41 @@ const CourseDetailPage = () => {
     <div className="course-player-container">
       <div className="player-header">
         <div className="header-left">
-          <Link to="/courses" className="back-link">
-            <ArrowLeft size={20} />
-            <span>Retour aux cours</span>
-          </Link>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "16px",
+              marginBottom: "12px",
+            }}
+          >
+            <Link to="/courses" className="back-link">
+              <ArrowLeft size={20} />
+              <span>Retour aux cours</span>
+            </Link>
+            <button
+              onClick={() => setSidebarVisible(!sidebarVisible)}
+              className="sidebar-toggle-btn"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                padding: "12px",
+                backgroundColor: "#7c3aed",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                cursor: "pointer",
+                fontWeight: "600",
+                fontSize: "16px",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 12px rgba(124, 58, 237, 0.3)",
+              }}
+            >
+              {sidebarVisible ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
           <h1>{course.titre}</h1>
           <div className="header-meta">
             <span className="badge-meta">{course.niveau}</span>
@@ -192,73 +233,78 @@ const CourseDetailPage = () => {
       </div>
 
       <div className="player-main">
-        <aside className="player-sidebar">
-          <div className="sidebar-title">Contenu du cours</div>
-          <div className="chapters-list">
-            {course.chapitres.map((chapitre) => (
-              <div key={chapitre.id} className="chapter-item">
-                <button
-                  className="chapter-header"
-                  onClick={() => toggleChapter(chapitre.id)}
-                >
-                  {expandedChapters[chapitre.id] ? (
-                    <ChevronDown size={18} />
-                  ) : (
-                    <PlayCircle size={18} />
-                  )}
-                  <span>{chapitre.titre}</span>
-                </button>
-
-                {expandedChapters[chapitre.id] && (
-                  <div className="lessons-list">
-                    {chapitre.lecons.map((lecon) => {
-                      const isCompleted = lecon.completed;
-                      return (
-                        <button
-                          key={lecon.id}
-                          className={`lesson-item-sidebar ${
-                            isCompleted ? "completed" : ""
-                          }`}
-                          onClick={() => toggleLesson(lecon.id)}
-                          style={{ opacity: isCompleted ? 0.7 : 1 }}
-                        >
-                          {isCompleted ? (
-                            <CheckCircle2 size={16} color="#10b981" />
-                          ) : (
-                            <PlayCircle size={16} />
-                          )}
-                          <span>{lecon.titre}</span>
-                        </button>
-                      );
-                    })}
-                    {course.enrolled && (
-                      <Link
-                        to={`/quiz/chapter/${chapitre.id}`}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          padding: "12px 16px",
-                          marginLeft: "32px",
-                          color: "#7c3aed",
-                          fontWeight: "500",
-                          textDecoration: "none",
-                          borderRadius: "8px",
-                          background: "#ede9fe",
-                          marginTop: "8px",
-                        }}
-                      >
-                        📝 Ouvrir le QCM du chapitre
-                      </Link>
+        {sidebarVisible && (
+          <aside className="player-sidebar">
+            <div className="sidebar-title">Contenu du cours</div>
+            <div className="chapters-list">
+              {course.chapitres.map((chapitre) => (
+                <div key={chapitre.id} className="chapter-item">
+                  <button
+                    className="chapter-header"
+                    onClick={() => toggleChapter(chapitre.id)}
+                  >
+                    {expandedChapters[chapitre.id] ? (
+                      <ChevronDown size={18} />
+                    ) : (
+                      <PlayCircle size={18} />
                     )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </aside>
+                    <span>{chapitre.titre}</span>
+                  </button>
 
-        <section className="lesson-content-area scrollable-chapters">
+                  {expandedChapters[chapitre.id] && (
+                    <div className="lessons-list">
+                      {chapitre.lecons.map((lecon) => {
+                        const isCompleted = lecon.completed;
+                        return (
+                          <button
+                            key={lecon.id}
+                            className={`lesson-item-sidebar ${
+                              isCompleted ? "completed" : ""
+                            }`}
+                            onClick={() => toggleLesson(lecon.id)}
+                            style={{ opacity: isCompleted ? 0.7 : 1 }}
+                          >
+                            {isCompleted ? (
+                              <CheckCircle2 size={16} color="#10b981" />
+                            ) : (
+                              <PlayCircle size={16} />
+                            )}
+                            <span>{lecon.titre}</span>
+                          </button>
+                        );
+                      })}
+                      {course.enrolled && (
+                        <Link
+                          to={`/quiz/chapter/${chapitre.id}`}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            padding: "12px 16px",
+                            marginLeft: "32px",
+                            color: "#7c3aed",
+                            fontWeight: "500",
+                            textDecoration: "none",
+                            borderRadius: "8px",
+                            background: "#ede9fe",
+                            marginTop: "8px",
+                          }}
+                        >
+                          📝 Ouvrir le QCM du chapitre
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </aside>
+        )}
+
+        <section
+          className="lesson-content-area scrollable-chapters"
+          style={{ flexGrow: 1 }}
+        >
           {!course.enrolled ? (
             <div className="enroll-preview">
               <div className="preview-overlay">

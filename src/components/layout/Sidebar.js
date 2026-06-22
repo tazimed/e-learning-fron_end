@@ -45,11 +45,6 @@ const Sidebar = () => {
   const teacherItems = [
     { name: "Create Course", icon: PlusCircle, path: "/teacher/create-course" },
     { name: "My Courses", icon: GraduationCap, path: "/teacher/my-courses" },
-    {
-      name: "Concentration Monitor",
-      icon: Eye,
-      path: "/teacher/concentration",
-    },
   ];
 
   const adminItems = [
@@ -65,8 +60,16 @@ const Sidebar = () => {
     <div className="sidebar">
       <div className="sidebar-header">
         <div className="logo-container">
-          <Zap className="logo-icon" />
-          <span className="logo-text">ML Mastery</span>
+          <img
+            src="/logo-idrak.png"
+            alt="Idrak AI"
+            style={{
+              width: "220px",
+              height: "auto",
+              objectFit: "contain",
+              margin: "10px 0",
+            }}
+          />
         </div>
       </div>
 
